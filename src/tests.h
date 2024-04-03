@@ -10,6 +10,7 @@
 #include <cmath>
 #include <algorithm>
 #include <stdlib.h>
+#include <numeric>
 
 namespace FEM2A {
     namespace Tests {
@@ -49,6 +50,19 @@ namespace FEM2A {
             mesh.load("data/geothermie_4.mesh");
             mesh.save("data/geothermie_4.mesh");
             return true;
+        }
+        
+        bool test_Quadrature(){
+		for (int i = 0; i < 4; i++){
+			Quadrature arr;
+			arr = arr.get_quadrature(i*2, false);
+			std::cout << arr.nb_points() << "\n" << arr.weight(0) << "\n";
+			double sum = 0;
+			for (int n = 0; n < arr.nb_points(); n++) 
+			{sum += arr.weight(n);}
+		    	std::cout << "somme : " << sum << "\n";}
+		    	if (sum != 0.5) {return false}
+		return true;
         }
 
     }

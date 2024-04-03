@@ -31,10 +31,12 @@ void run_tests()
     const bool t_opennl = true;
     const bool t_lmesh = true;
     const bool t_io = true;
+    const bool t_Quadrature = true;
 
     if( t_opennl ) test_opennl();
     if( t_lmesh ) Tests::test_load_mesh();
     if( t_io ) Tests::test_load_save_mesh();
+    if( t_Quadrature ) Tests::test_Quadrature();
 }
 
 void run_simu()
