@@ -133,9 +133,14 @@ namespace FEM2A {
         : border_( border )
     {
         std::cout << "[ElementMapping] constructor for element " << i << " ";
-        if ( border ) std::cout << "(border)";
-        std::cout << '\n';
-        // TODO
+        if ( border ) {
+        std::cout << "(border)"<< '\n';
+        for (int n = 0; n < 2; n++) vertices_[n] = M.get_triangle_vertex(i, n);
+        }
+        else{
+        for (int n = 0; n < 3; n++) vertices_[n] = M.get_triangle_vertex(i, n);
+        }
+        // afficher vecteur
     }
 
     vertex ElementMapping::transform( vertex x_r ) const

@@ -60,9 +60,17 @@ namespace FEM2A {
 			double sum = 0;
 			for (int n = 0; n < arr.nb_points(); n++) 
 			{sum += arr.weight(n);}
-		    	std::cout << "somme : " << sum << "\n";}
-		    	if (sum != 0.5) {return false}
+		    	std::cout << "somme : " << sum << "\n";
+		    	if (sum != 0.5) return false;}
 		return true;
+        }
+        
+        bool test_elem_mapping(){
+        	Mesh square;
+            	square.load("data/square.mesh");
+        	ElementMapping triangle4 = ElementMapping(square, false, 4);
+        	
+        	return true;
         }
 
     }
