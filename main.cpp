@@ -34,6 +34,7 @@ void run_tests()
     const bool t_Quadrature = true;
     const bool t_elem_mapping = true;
     const bool t_shape_function = true;
+    const bool t_assemble_Ke = true;
 
 
     if( t_opennl ) test_opennl();
@@ -41,7 +42,10 @@ void run_tests()
     if( t_io ) Tests::test_load_save_mesh();
     if( t_Quadrature ) Tests::test_Quadrature();
     if( t_elem_mapping ) Tests::test_elem_mapping();
+    if( t_elem_mapping ) Tests::test_jacobian_edge();
+    if( t_elem_mapping ) Tests::test_jacobian_triangle();
     if( t_shape_function ) Tests::test_shape_function();
+    if( t_assemble_Ke ) Tests::test_assemble_Ke();
     
 }
 

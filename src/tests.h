@@ -53,6 +53,7 @@ namespace FEM2A {
         }
         
         bool test_Quadrature(){
+        	std::cout << "\ntest quadrature :\n";
 		for (int i = 0; i < 4; i++){
 			Quadrature arr;
 			arr = arr.get_quadrature(i*2, false);
@@ -66,6 +67,7 @@ namespace FEM2A {
         }
         
         bool test_elem_mapping(){
+        	std::cout << "\ntest element_mapping :\n";
         	Mesh square;
             	square.load("data/square.mesh");
         	ElementMapping triangle4 = ElementMapping(square, false, 4);
@@ -77,6 +79,7 @@ namespace FEM2A {
         }
         
         bool test_shape_function(){
+                std::cout << "\ntest shape_function :\n";
         	ShapeFunctions fct1 = ShapeFunctions(2,1);
         	ShapeFunctions fct2 = ShapeFunctions(3,1);
         	std::cout << "nb fonctions :" << fct1.nb_functions() << "\n";
@@ -91,5 +94,61 @@ namespace FEM2A {
         }
         
 
+	bool test_jacobian_edge(){
+            std::cout << "jacobian edge :\n";
+            Mesh mesh;
+            mesh.load("data/square.mesh");
+            ElementMapping element(mesh, true, 4);
+            vertex vec1;
+            vec1.x  = 0.2;
+            vec1.y = 0.4;
+            DenseMatrix J;
+            J = element.jacobian_matrix(vec1);
+            std::cout << J.get(0, 0) << " , " << J.get(0, 1) << "\n";
+            std::cout << "det: " << element.jacobian(vec1) << "\n";
+            return true;
+        }
+        
+        bool test_jacobian_triangle(){
+            std::cout << "jacobian triangle :\n";
+            Mesh mesh;
+            mesh.load("data/square.mesh");
+            ElementMapping element(mesh, false, 4);
+            vertex vec1;
+            vec1.x  = 0.2;
+            vec1.y = 0.4;
+            DenseMatrix J;
+            J = element.jacobian_matrix(vec1);
+            std::cout << J.get(0,0) << " " << J.get(1,0) << "\n" << J.get(0,1) << " " << J.get(1,1) << "\n";
+            std::cout << "det : " << element.jacobian(vec1) << "\n";
+            return true;
+        }
+        
+        double unit_fct( vertex v )
+        {
+            return 1.;
+        }
+        
+        bool test_assemble_Ke(){
+        std::cout << "\ntest assemblage Ke :\n";
+        Quadrature quadrature;
+        quadrature = quadrature.get_quadrature(0, false);
+        Mesh mesh;
+        mesh.load("data/square.mesh");
+        ElementMapping element(mesh, false, 4);
+        ShapeFunctions reference_functions = ShapeFunctions(2,1);
+        DenseMatrix Ke;
+        Ke.set_size(3,3);
+        
+        assemble_elementary_matrix(
+        element,
+        reference_functions,
+        quadrature,
+        unit_fct,
+        Ke);
+        Ke.print();
+        return true;
+        }
+        
     }
 }

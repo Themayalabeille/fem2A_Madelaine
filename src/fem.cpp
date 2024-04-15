@@ -162,22 +162,35 @@ namespace FEM2A {
         return r ;
     }
 
-    DenseMatrix ElementMapping::jacobian_matrix( vertex x_r ) const
+DenseMatrix ElementMapping::jacobian_matrix( vertex x_r ) const
     {
-        std::cout << "[ElementMapping] compute jacobian matrix" << '\n';
-        // TODO
         DenseMatrix J ;
         if (border_){
-        
+            J.set_size(1,2);
+            J.set(0, 0, vertices_[1].x-vertices_[0].x);
+            J.set(0, 1, vertices_[1].y-vertices_[0].y);
+        }
+        else {
+            J.set_size(2,2);
+            J.set(0, 0, vertices_[1].x-vertices_[0].x);
+            J.set(1, 0, vertices_[1].y-vertices_[0].y);
+            J.set(0, 1, vertices_[2].x-vertices_[0].x);
+            J.set(1, 1, vertices_[2].y-vertices_[0].y);
         }
         return J ;
     }
-
+    
     double ElementMapping::jacobian( vertex x_r ) const
     {
-        std::cout << "[ElementMapping] compute jacobian determinant" << '\n';
-        // TODO
-        return 0. ;
+        DenseMatrix J = jacobian_matrix( x_r );
+        double determinant;
+        if (border_){
+            determinant = pow(0.5, pow(2, J.get(0, 0)) + pow(2, J.get(0, 1)));
+        }
+        else {
+            determinant = J.det_2x2();
+        }
+        return determinant ;
     }
 
     /****************************************************************/
@@ -252,12 +265,22 @@ namespace FEM2A {
     void assemble_elementary_matrix(
         const ElementMapping& elt_mapping,
         const ShapeFunctions& reference_functions,
-        const Quadrature& quadrature,
+        const Quadrature& Ke_quad,
         double (*coefficient)(vertex),
         DenseMatrix& Ke )
     {
-        std::cout << "compute elementary matrix" << '\n';
-        // TODO
+        for (int i = 0; i < Ke.height(); i++){
+         for (int j = 0; j < Ke.width(); j++){
+		for (int q = 0; q < Ke_quad.nb_points(); q++){
+			vertex gauss_point = Ke_quad.point(q);
+			DenseMatrix jacobian = elt_mapping.jacobian_matrix(gauss_point);
+			vec2 gradi = jacobian.invert_2x2().transpose().mult_2x2_2(reference_functions.evaluate_grad(i, gauss_point));
+			vec2 gradj = jacobian.invert_2x2().transpose().mult_2x2_2(reference_functions.evaluate_grad(j, gauss_point));
+			double scal = dot(gradi,gradj);
+			Ke.add(i, j, Ke_quad.weight(q) * coefficient(elt_mapping.transform(gauss_point)) * scal * elt_mapping.jacobian(gauss_point));
+		}
+         }
+        }
     }
 
     void local_to_global_matrix(
@@ -268,6 +291,13 @@ namespace FEM2A {
     {
         std::cout << "Ke -> K" << '\n';
         // TODO
+        
+        for (int i = 0; i < Ke.height(); i++){
+         for (int j = 0; j < Ke.width(); j++){
+         K.add(i, M.get_triangle_vertex(t,), Ke.get(i,j));
+        
+        }
+        }
     }
 
     void assemble_elementary_vector(
