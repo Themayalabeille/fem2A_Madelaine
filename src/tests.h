@@ -69,9 +69,27 @@ namespace FEM2A {
         	Mesh square;
             	square.load("data/square.mesh");
         	ElementMapping triangle4 = ElementMapping(square, false, 4);
-        	
+        	vertex vec1;
+        	vec1.x  = 0.2;
+        	vec1.y = 0.4;
+        	std::cout << "mapping x y : " << triangle4.transform(vec1).x << " " << triangle4.transform(vec1).y << "\n";
         	return true;
         }
+        
+        bool test_shape_function(){
+        	ShapeFunctions fct1 = ShapeFunctions(2,1);
+        	ShapeFunctions fct2 = ShapeFunctions(3,1);
+        	std::cout << "nb fonctions :" << fct1.nb_functions() << "\n";
+        	vertex vec2;
+        	vec2.x  = 1;
+        	vec2.y = 1;
+        	int i=0;
+        	std::cout << "shapefunction" << i << " : " << fct1.evaluate(i, vec2) << "\n";
+        	std::cout << "shapefunction grad x y " << i << " : " << fct1.evaluate_grad(i, vec2).x << " " << fct1.evaluate_grad(0, vec2).y << "\n";
+        	return true;
+        	
+        }
+        
 
     }
 }

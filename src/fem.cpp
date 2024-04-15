@@ -132,22 +132,33 @@ namespace FEM2A {
     ElementMapping::ElementMapping( const Mesh& M, bool border, int i )
         : border_( border )
     {
-        std::cout << "[ElementMapping] constructor for element " << i << " ";
         if ( border ) {
-        std::cout << "(border)"<< '\n';
-        for (int n = 0; n < 2; n++) vertices_[n] = M.get_triangle_vertex(i, n);
+        for (int n = 0; n < 2; n++) vertices_.push_back(M.get_edge_vertex(i, n));
         }
         else{
-        for (int n = 0; n < 3; n++) vertices_[n] = M.get_triangle_vertex(i, n);
+        for (int n = 0; n < 3; n++) vertices_.push_back(M.get_triangle_vertex(i, n));
         }
-        // afficher vecteur
+        /*/
+        // afficher vecteurs de vertices_
+        std::cout << "[ElementMapping] constructor for element " << i << " ";
+        std::cout << "(border)"<< '\n';
+        for (int v = 0; v < vertices_.size();v++){
+        std::cout << "x : " << vertices_[v].x << "y : " << vertices_[v].y << "\n";
+        }
+        /*/
     }
 
     vertex ElementMapping::transform( vertex x_r ) const
     {
-        std::cout << "[ElementMapping] transform reference to world space" << '\n';
-        // TODO
         vertex r ;
+        if ( border_ ) {
+        r.x = (1-x_r.x)*vertices_[0].x + x_r.x*vertices_[1].x;
+        r.y = (1-x_r.x)*vertices_[0].y + x_r.x*vertices_[1].y;
+        }
+        else{
+        r.x = (1-x_r.x-x_r.y)*vertices_[0].x + x_r.x*vertices_[1].x + x_r.y*vertices_[2].x;
+        r.y = (1-x_r.x-x_r.y)*vertices_[0].y + x_r.x*vertices_[1].y + x_r.y*vertices_[2].y;
+        }
         return r ;
     }
 
@@ -156,6 +167,9 @@ namespace FEM2A {
         std::cout << "[ElementMapping] compute jacobian matrix" << '\n';
         // TODO
         DenseMatrix J ;
+        if (border_){
+        
+        }
         return J ;
     }
 
@@ -172,29 +186,63 @@ namespace FEM2A {
     ShapeFunctions::ShapeFunctions( int dim, int order )
         : dim_( dim ), order_( order )
     {
-        std::cout << "[ShapeFunctions] constructor in dimension " << dim << '\n';
-        // TODO
+        if (dim != 1 && dim != 2 || order != 1){std::cout << "alerte valeur de dim ou order impossible" << "\n";}
     }
 
     int ShapeFunctions::nb_functions() const
     {
-        std::cout << "[ShapeFunctions] number of functions" << '\n';
-        // TODO
-        return 0 ;
+        return dim_+1 ;
     }
 
     double ShapeFunctions::evaluate( int i, vertex x_r ) const
     {
-        std::cout << "[ShapeFunctions] evaluate shape function " << i << '\n';
-        // TODO
+        if (dim_ == 2){
+        switch(i){
+		case 0: return 1-x_r.x-x_r.y;
+		case 1: return x_r.x;
+		case 2: return x_r.y;
+		}
+        }
+        if (dim_ == 1){
+        switch(i){
+		case 0: return 1-x_r.x;
+		case 1: return x_r.x;
+		}
+        }
         return 0. ; // should not be reached
     }
 
     vec2 ShapeFunctions::evaluate_grad( int i, vertex x_r ) const
     {
-        std::cout << "[ShapeFunctions] evaluate gradient shape function " << i << '\n';
-        // TODO
         vec2 g ;
+        if (dim_ == 2){
+        switch(i){
+		case 0:
+		g.x = -1;
+		g.y = -1;
+		break;
+		case 1:
+		g.x = 1;
+		g.y = 0;
+		break;
+		case 2:
+		g.x = 0;
+		g.y = 1;
+		break;
+		}
+        }
+        if (dim_ == 1){
+        switch(i){
+		case 0:
+		g.x = -1;
+		g.y = 0;
+		break;
+		case 1:
+		g.x = 1;
+		g.y = 0;
+		break;
+		}
+        }
         return g ;
     }
 

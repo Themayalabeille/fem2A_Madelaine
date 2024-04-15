@@ -33,12 +33,16 @@ void run_tests()
     const bool t_io = true;
     const bool t_Quadrature = true;
     const bool t_elem_mapping = true;
+    const bool t_shape_function = true;
+
 
     if( t_opennl ) test_opennl();
     if( t_lmesh ) Tests::test_load_mesh();
     if( t_io ) Tests::test_load_save_mesh();
     if( t_Quadrature ) Tests::test_Quadrature();
     if( t_elem_mapping ) Tests::test_elem_mapping();
+    if( t_shape_function ) Tests::test_shape_function();
+    
 }
 
 void run_simu()
