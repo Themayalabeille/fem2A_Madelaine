@@ -133,7 +133,7 @@ namespace FEM2A {
         bool test_assemble_Ke_K(){
 		std::cout << "\ntest assemblage Ke :\n";
 		Quadrature quadrature;
-		quadrature = quadrature.get_quadrature(2, false);
+		quadrature = quadrature.get_quadrature(0, false);
 		Mesh mesh;
 		mesh.load("data/square.mesh");
 		ElementMapping element(mesh, false, 4);
@@ -170,7 +170,7 @@ namespace FEM2A {
                 Q = Quadrature::get_quadrature(2);
                
                 assemble_elementary_vector(element, shape, Q, Simu::unit_fct, Fe );
-                for (int i = 0; i < Fe.size(); ++i){
+                for (int i = 0; i < Fe.size(); i++){
                 std::cout << Fe[i] << std::endl;
                 }
                
@@ -181,17 +181,41 @@ namespace FEM2A {
         	std::cout << "\ntest dirichlet :" << std::endl;
         	Mesh mesh;
                 mesh.load("data/square.mesh");
-                std::vector< double > values
-                values.size() = mesh.nb_vertices()
+                std::vector< double > values;
+                for (int i = 0; i < mesh.nb_vertices(); i++){
+                 values.push_back(0);}
+                
+                Quadrature quadrature;
+		quadrature = quadrature.get_quadrature(2, false);
+		ElementMapping element(mesh, false, 4);
+		ShapeFunctions reference_functions = ShapeFunctions(2,1);
+		DenseMatrix Ke;
+		Ke.set_size(3,3);
+		assemble_elementary_matrix(
+		element,
+		reference_functions,
+		quadrature,
+		unit_fct,
+		Ke);
+                SparseMatrix K = SparseMatrix( mesh.nb_vertices());
+		local_to_global_matrix(mesh,
+		4,
+		Ke,
+		K );
+		std::vector< double > F = values;
+		std::vector< bool > attribute_is_dirichlet;
+                for (int i = 0; i < mesh.nb_vertices(); i++){
+                 values.push_back(true);}
+                
                
         	apply_dirichlet_boundary_conditions(
         	mesh,
-		const std::vector< bool >& attribute_is_dirichlet, /* size: nb of attributes */
-		const std::vector< double >& values, /* size: nb of DOFs */
-		SparseMatrix& K,
-		std::vector< double >& F )
+		attribute_is_dirichlet, /* size: nb of attributes */
+		values, /* size: nb of DOFs */
+		K,
+		F );
         	
-        	return true
+        	return true;
         }
 
 

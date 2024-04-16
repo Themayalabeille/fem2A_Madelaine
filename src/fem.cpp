@@ -321,6 +321,7 @@ void assemble_elementary_vector(
         }
     }
 
+
     void assemble_elementary_neumann_vector(
         const ElementMapping& elt_mapping_1D,
         const ShapeFunctions& reference_functions_1D,
@@ -330,6 +331,16 @@ void assemble_elementary_vector(
     {
         std::cout << "compute elementary vector (neumann condition)" << '\n';
         // TODO
+        double sum;
+        for (int i = 0; i < reference_functions_1D.nb_functions(); i++) {
+        	sum = 0;
+        	for (int q = 0; q < quadrature_1D.nb_points(); q++) {
+        		vertex val = quadrature_1D.point(q);
+        		sum += quadrature_1D.weight(q) * reference_functions_1D.evaluate(i, val) * neumann(val) * elt_mapping_1D.jacobian(val);
+        		std::cout << "i : " << i << " , q : " << q << " calcul : " << sum << "\n";
+        	}        	
+        	Fe.push_back(sum);
+    	}
     }
 
     void local_to_global_vector(
@@ -339,8 +350,16 @@ void assemble_elementary_vector(
         std::vector< double >& Fe,
         std::vector< double >& F )
     {
-        std::cout << "Fe -> F" << '\n';
-        // TODO
+        if (border) {
+        	for (int j = 0; j < Fe.size();j++){
+        	 F[M.get_edge_vertex_index(i, j)] += Fe[j];
+        	}
+        }
+        else {
+        	for (int j = 0; j < Fe.size();j++){
+        	 F[M.get_triangle_vertex_index(i, j)] += Fe[j];
+        	}
+        }
     }
 
     void apply_dirichlet_boundary_conditions(
@@ -350,20 +369,26 @@ void assemble_elementary_vector(
         SparseMatrix& K,
         std::vector< double >& F )
     {
-        std::cout << "apply dirichlet boundary conditions" << '\n';
-        // TODO
+        int P = 10000;
+        std::vector<bool> node_check;
+        for (int i = 0; i < M.nb_vertices(); i++){
+                 node_check.push_back(true);}
         for (int i = 0; i< M.nb_edges(); i++){
-         if (attribute_is_dirichlet[M.get_vertex_attribute( M.get_edge_vertex_index(i,0) )]){
-           int j = M.get_edge_vertex_index(i,0);
-           K.add(j, j, values[j]);
-           F[j] += values[j];
+         if (attribute_is_dirichlet[M.get_edge_attribute(i)]){
+           int j1 = M.get_edge_vertex_index(i,0);
+           if (node_check[j1]) {
+           node_check[j1] = false;
+           K.add(j1, j1, P);
+           F[j1] += values[j1]*P;
+           }
+           int j2 = M.get_edge_vertex_index(i,1);
+           if (node_check[j2]) {
+           node_check[j2] = false;
+           K.add(j2, j2, P);
+           F[j2] += values[j2]*P;
+           }
+          }
          }
-         if (attribute_is_dirichlet[M.get_vertex_attribute( M.get_edge_vertex_index(i,1) )]){
-          int j = M.get_edge_vertex_index(i,1);
-          K.add(j, j, values[j]);
-          F[j] += values[j]*1000*F[j];
-         }
-        }
     }
 
     void solve_poisson_problem(
