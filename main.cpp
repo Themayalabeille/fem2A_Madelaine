@@ -45,7 +45,8 @@ void run_tests()
     if( t_elem_mapping ) Tests::test_jacobian_edge();
     if( t_elem_mapping ) Tests::test_jacobian_triangle();
     if( t_shape_function ) Tests::test_shape_function();
-    if( t_assemble_Ke ) Tests::test_assemble_Ke();
+    if( t_assemble_Ke ) Tests::test_assemble_Ke_K();
+    if( t_assemble_Ke ) Tests::test_assemble_elementary_vector();
     
 }
 

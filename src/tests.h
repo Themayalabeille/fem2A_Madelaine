@@ -3,6 +3,7 @@
 #include "mesh.h"
 #include "fem.h"
 #include "solver.h"
+#include "simu.h"
 
 #include <assert.h>
 #include <iostream>
@@ -129,26 +130,53 @@ namespace FEM2A {
             return 1.;
         }
         
-        bool test_assemble_Ke(){
-        std::cout << "\ntest assemblage Ke :\n";
-        Quadrature quadrature;
-        quadrature = quadrature.get_quadrature(0, false);
-        Mesh mesh;
-        mesh.load("data/square.mesh");
-        ElementMapping element(mesh, false, 4);
-        ShapeFunctions reference_functions = ShapeFunctions(2,1);
-        DenseMatrix Ke;
-        Ke.set_size(3,3);
-        
-        assemble_elementary_matrix(
-        element,
-        reference_functions,
-        quadrature,
-        unit_fct,
-        Ke);
-        Ke.print();
-        return true;
+        bool test_assemble_Ke_K(){
+		std::cout << "\ntest assemblage Ke :\n";
+		Quadrature quadrature;
+		quadrature = quadrature.get_quadrature(0, false);
+		Mesh mesh;
+		mesh.load("data/square.mesh");
+		ElementMapping element(mesh, false, 4);
+		ShapeFunctions reference_functions = ShapeFunctions(2,1);
+		DenseMatrix Ke;
+		Ke.set_size(3,3);
+		assemble_elementary_matrix(
+		element,
+		reference_functions,
+		quadrature,
+		unit_fct,
+		Ke);
+		Ke.print();
+		
+		std::cout << "\ntest assemblage global K :\n";
+		SparseMatrix K = SparseMatrix( mesh.nb_vertices());
+		local_to_global_matrix(mesh,
+		4,
+		Ke,
+		K );
+		K.print();
+		return true;
         }
         
+	bool test_assemble_elementary_vector()
+        {
+            std::cout << "\ntest assemble Fel :" << std::endl;
+            Mesh mesh;
+               mesh.load("data/square.mesh");
+                ElementMapping element(mesh, false, 4);
+                std::vector <double > Fe;
+                ShapeFunctions shape(2, 1);
+                Quadrature Q;
+                Q = Quadrature::get_quadrature(2);
+               
+                assemble_elementary_vector(element, shape, Q, Simu::unit_fct, Fe );
+                for (int i = 0; i < Fe.size(); ++i){
+                std::cout << Fe[i] << std::endl;
+                }
+               
+                return true;
+        }
+
+
     }
 }

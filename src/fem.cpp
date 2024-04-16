@@ -288,27 +288,37 @@ DenseMatrix ElementMapping::jacobian_matrix( vertex x_r ) const
         int t,
         const DenseMatrix& Ke,
         SparseMatrix& K )
-    {
-        std::cout << "Ke -> K" << '\n';
-        // TODO
-        
+    {    
         for (int i = 0; i < Ke.height(); i++){
          for (int j = 0; j < Ke.width(); j++){
-         K.add(i, M.get_triangle_vertex(t,), Ke.get(i,j));
-        
+          K.add(M.get_triangle_vertex_index(t,i), M.get_triangle_vertex_index(t,j), Ke.get(i,j));
         }
         }
     }
 
-    void assemble_elementary_vector(
+void assemble_elementary_vector(
         const ElementMapping& elt_mapping,
         const ShapeFunctions& reference_functions,
         const Quadrature& quadrature,
         double (*source)(vertex),
         std::vector< double >& Fe )
     {
-        std::cout << "compute elementary vector (source term)" << '\n';
-        // TODO
+        int nbr_quad = quadrature.nb_points();
+        int max = reference_functions.nb_functions();
+        
+        for (int i = 0; i < max; ++i){
+            double Fe_i = 0;
+            for (int q = 0; q < nbr_quad; ++q){
+                vertex quad = quadrature.point(q);
+                double w = quadrature.weight(q);
+                double shape_i = reference_functions.evaluate(i, quad);
+                double det = elt_mapping.jacobian(quad);
+                vertex Me = elt_mapping.transform(quad);
+               
+                Fe_i += w*shape_i*source(Me)*det;
+            }
+            Fe.push_back(Fe_i);
+        }
     }
 
     void assemble_elementary_neumann_vector(
@@ -342,6 +352,18 @@ DenseMatrix ElementMapping::jacobian_matrix( vertex x_r ) const
     {
         std::cout << "apply dirichlet boundary conditions" << '\n';
         // TODO
+        for (int i = 0; i< M.nb_edges(); i++){
+         if (attribute_is_dirichlet[M.get_vertex_attribute( M.get_edge_vertex_index(i,0) )]){
+           int j = M.get_edge_vertex_index(i,0);
+           K.add(j, j, values[j]);
+           F[j] = values[j];
+         }
+         if (attribute_is_dirichlet[M.get_vertex_attribute( M.get_edge_vertex_index(i,1) )]){
+          int j = M.get_edge_vertex_index(i,0);
+          K.add(j, j, values[j]);
+          F[j] = values[j];
+         }
+        }
     }
 
     void solve_poisson_problem(
