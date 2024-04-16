@@ -40,10 +40,16 @@ namespace FEM2A {
             }
             Mesh mesh;
             mesh.load(mesh_filename);
+            
+            mesh.set_attribute(unit_fct, 1, true);
+            
             Quadrature quadrature;
-	    quadrature = quadrature.get_quadrature(2, false);
+	    quadrature = quadrature.get_quadrature(0, false);
+	    
 	    ShapeFunctions reference_functions = ShapeFunctions(2,1);
-	    SparseMatrix K = SparseMatrix( mesh.nb_vertices());
+	    
+	    SparseMatrix K = SparseMatrix( mesh.nb_vertices() * quadrature.nb_points());
+	    
 	    for (int i = 0; i < mesh.nb_triangles(); i++){
 	     ElementMapping element(mesh, false, i);
 	     DenseMatrix Ke;
@@ -59,18 +65,15 @@ namespace FEM2A {
 		Ke,
 		K );
             }
-            for (int i = 0; i < mesh.nb_edges(); i++){
-             mesh.set_attribute(unit_fct, 1, true);
+             
+            
+            std::vector< double > values(mesh.nb_vertices());
+            for (int i =0 ; i < mesh.nb_vertices(); ++i){
+                values[i] = mesh.get_vertex(i).x + mesh.get_vertex(i).y; 
             }
-            std::vector< double > values;
-            for (int i = 0; i < mesh.nb_vertices(); i++){
-             values.push_back(xy_fct(mesh.get_edge_vertex(i,0)));
-             values.push_back(xy_fct(mesh.get_edge_vertex(i,1)));
-            }
-            std::vector< double > F;
-            for (int i = 0; i < mesh.nb_vertices(); i++){
-             values.push_back(0);
-            }
+            
+            std::vector< double > F(mesh.nb_vertices(), 1);
+            
             std::vector< bool > attribute_is_dirichlet(1,true);
             
             apply_dirichlet_boundary_conditions(
@@ -80,13 +83,13 @@ namespace FEM2A {
 		K,
 		F );
             
-            std::vector<double> x;
-            bool converged = solve(
-            K,
-            F,
-            x);
+            std::vector<double> x(mesh.nb_vertices(), 0);
+            bool converged = solve(K, F, x);
             if (!converged) {std::cout << "\nAh! le système linéaire n'a pas convergé!!!!!!!!!!!!!!!!!!!\n";}
-            std::cout << x[0];
+            for (double i :x){
+                std::cout << i << ' ';
+            }
+            std::cout <<'\n';
 
             std::cout << "TO BE IMPLEMENTED !!!" << std::endl;
         }
