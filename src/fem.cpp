@@ -356,12 +356,12 @@ void assemble_elementary_vector(
          if (attribute_is_dirichlet[M.get_vertex_attribute( M.get_edge_vertex_index(i,0) )]){
            int j = M.get_edge_vertex_index(i,0);
            K.add(j, j, values[j]);
-           F[j] = values[j];
+           F[j] += values[j];
          }
          if (attribute_is_dirichlet[M.get_vertex_attribute( M.get_edge_vertex_index(i,1) )]){
-          int j = M.get_edge_vertex_index(i,0);
+          int j = M.get_edge_vertex_index(i,1);
           K.add(j, j, values[j]);
-          F[j] = values[j];
+          F[j] += values[j]*1000*F[j];
          }
         }
     }

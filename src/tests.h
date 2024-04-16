@@ -133,7 +133,7 @@ namespace FEM2A {
         bool test_assemble_Ke_K(){
 		std::cout << "\ntest assemblage Ke :\n";
 		Quadrature quadrature;
-		quadrature = quadrature.get_quadrature(0, false);
+		quadrature = quadrature.get_quadrature(2, false);
 		Mesh mesh;
 		mesh.load("data/square.mesh");
 		ElementMapping element(mesh, false, 4);
@@ -175,6 +175,23 @@ namespace FEM2A {
                 }
                
                 return true;
+        }
+        
+        bool test_dirichlet(){
+        	std::cout << "\ntest dirichlet :" << std::endl;
+        	Mesh mesh;
+                mesh.load("data/square.mesh");
+                std::vector< double > values
+                values.size() = mesh.nb_vertices()
+               
+        	apply_dirichlet_boundary_conditions(
+        	mesh,
+		const std::vector< bool >& attribute_is_dirichlet, /* size: nb of attributes */
+		const std::vector< double >& values, /* size: nb of DOFs */
+		SparseMatrix& K,
+		std::vector< double >& F )
+        	
+        	return true
         }
 
 

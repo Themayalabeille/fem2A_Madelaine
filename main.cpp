@@ -35,6 +35,7 @@ void run_tests()
     const bool t_elem_mapping = true;
     const bool t_shape_function = true;
     const bool t_assemble_Ke = true;
+    const bool t_dirichlet = true;
 
 
     if( t_opennl ) test_opennl();
@@ -47,6 +48,7 @@ void run_tests()
     if( t_shape_function ) Tests::test_shape_function();
     if( t_assemble_Ke ) Tests::test_assemble_Ke_K();
     if( t_assemble_Ke ) Tests::test_assemble_elementary_vector();
+    if( t_dirichlet ) Tests::test_dirichlet();
     
 }
 
