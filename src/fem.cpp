@@ -296,29 +296,32 @@ DenseMatrix ElementMapping::jacobian_matrix( vertex x_r ) const
         }
     }
 
-void assemble_elementary_vector(
+	void assemble_elementary_vector(
         const ElementMapping& elt_mapping,
         const ShapeFunctions& reference_functions,
         const Quadrature& quadrature,
         double (*source)(vertex),
         std::vector< double >& Fe )
     {
-        int nbr_quad = quadrature.nb_points();
-        int max = reference_functions.nb_functions();
+        //std::cout << "compute elementary vector (source term)" << '\n';
+        // TODO
         
-        for (int i = 0; i < max; ++i){
-            double Fe_i = 0;
-            for (int q = 0; q < nbr_quad; ++q){
-                vertex quad = quadrature.point(q);
-                double w = quadrature.weight(q);
-                double shape_i = reference_functions.evaluate(i, quad);
-                double det = elt_mapping.jacobian(quad);
-                vertex Me = elt_mapping.transform(quad);
-               
-                Fe_i += w*shape_i*source(Me)*det;
+        int imax;
+        double shape_i;
+        
+        
+        imax = reference_functions.nb_functions();
+        Fe.resize(imax);
+        
+        for (int i =0; i<imax; ++i)
+            {
+            Fe[i] =0;
+            for(int q = 0; q< quadrature.nb_points(); ++q)
+                {
+                shape_i = reference_functions.evaluate(i,quadrature.point(q));
+                Fe[i]+= quadrature.weight(q)*source(elt_mapping.transform(quadrature.point(q)))* shape_i * elt_mapping.jacobian(quadrature.point(q));
+                }
             }
-            Fe.push_back(Fe_i);
-        }
     }
 
 
@@ -372,20 +375,20 @@ void assemble_elementary_vector(
         int P = 10000;
         std::vector<bool> node_check;
         for (int i = 0; i < M.nb_vertices(); i++){
-                 node_check.push_back(true);}
+                 node_check.push_back(false);}
         for (int i = 0; i< M.nb_edges(); i++){
          if (attribute_is_dirichlet[M.get_edge_attribute(i)]){
            int j1 = M.get_edge_vertex_index(i,0);
-           if (node_check[j1]) {
-           node_check[j1] = false;
+           if (!node_check[j1]) {
            K.add(j1, j1, P);
            F[j1] += values[j1]*P;
+           node_check[j1] = true;
            }
            int j2 = M.get_edge_vertex_index(i,1);
-           if (node_check[j2]) {
-           node_check[j2] = false;
+           if (!node_check[j2]) {
            K.add(j2, j2, P);
            F[j2] += values[j2]*P;
+           node_check[j2] = true;
            }
           }
          }
