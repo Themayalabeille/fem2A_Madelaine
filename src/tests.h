@@ -252,10 +252,10 @@ namespace FEM2A {
 		4,
 		Ke,
 		K );
-		std::vector< double > F = values;
+		std::vector< double > F( mesh.nb_vertices(), 0);
 		std::vector< bool > attribute_is_dirichlet;
                 for (int i = 0; i < mesh.nb_vertices(); i++){
-                 values.push_back(true);}
+                 attribute_is_dirichlet.push_back(true);}
                 
                
         	apply_dirichlet_boundary_conditions(
