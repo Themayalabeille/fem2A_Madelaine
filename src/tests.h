@@ -133,7 +133,7 @@ namespace FEM2A {
         bool test_assemble_Ke_K(){
 		std::cout << "\ntest assemblage Ke :\n";
 		Quadrature quadrature;
-		quadrature = quadrature.get_quadrature(0, false);
+		quadrature = quadrature.get_quadrature(2, false);
 		Mesh mesh;
 		mesh.load("data/square.mesh");
 		ElementMapping element(mesh, false, 4);
@@ -175,6 +175,35 @@ namespace FEM2A {
                 }
                
                 return true;
+        }
+
+	bool test_assemble_Fe_F()
+        {
+            std::cout << "\ntest assemblage Fe :\n";
+		Quadrature quadrature;
+		quadrature = quadrature.get_quadrature(2, false);
+		Mesh mesh;
+		mesh.load("data/square.mesh");
+		ElementMapping element(mesh, false, 4);
+		ShapeFunctions reference_functions = ShapeFunctions(2,1);
+		DenseMatrix Fe;
+		Ke.set_size(3,3);
+		assemble_elementary_matrix(
+		element,
+		reference_functions,
+		quadrature,
+		unit_fct,
+		Ke);
+		Ke.print();
+		
+		std::cout << "\ntest assemblage global F :\n";
+		SparseMatrix K = SparseMatrix( mesh.nb_vertices());
+		local_to_global_matrix(mesh,
+		4,
+		Ke,
+		K );
+		K.print();
+		return true;
         }
         
         bool test_dirichlet(){
