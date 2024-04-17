@@ -213,11 +213,17 @@ namespace FEM2A {
 		4,
 		Fe,
 		F );
-		std::cout << "\nVecteur température :\n";
+		std::cout << "\nF source :  :\n";
                 for (double i :F){
                  std::cout << i << ' ';
                 }
                 std::cout <<'\n';
+
+		assemble_elementary_neumann_vector(element, reference_functions, quadrature, unit_fct, Fe )
+		std::cout << "Fe neuman : " << std::endl;
+		for (int i = 0; i < Fe.size(); i++){
+                std::cout << Fe[i] << std::endl;
+                }
 		return true;
         }
         
