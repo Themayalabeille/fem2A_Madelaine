@@ -165,12 +165,19 @@ namespace FEM2A {
                mesh.load("data/square.mesh");
                 ElementMapping element(mesh, false, 4);
                 std::vector <double > Fe;
-                ShapeFunctions shape(2, 1);
-                Quadrature Q;
-                Q = Quadrature::get_quadrature(2);
+                ShapeFunctions reference_functions(2, 1);
+                Quadrature quadrature;
+                quadrature = Quadrature::get_quadrature(2);
                
-                assemble_elementary_vector(element, shape, Q, Simu::unit_fct, Fe );
+                assemble_elementary_vector(element, reference_functions, quadrature, unit_fct, Fe );
+		std::cout << "Fe source" << std::endl;
                 for (int i = 0; i < Fe.size(); i++){
+                std::cout << Fe[i] << std::endl;
+                }
+
+		assemble_elementary_neumann_vector(element, reference_functions, quadrature, unit_fct, Fe )
+		std::cout << "Fe neuman" << std::endl;
+		for (int i = 0; i < Fe.size(); i++){
                 std::cout << Fe[i] << std::endl;
                 }
                
