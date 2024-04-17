@@ -193,15 +193,24 @@ namespace FEM2A {
 		quadrature,
 		unit_fct,
 		Fe);
-		Fe.print();
+		std::cout << "\nVecteur température :\n";
+                for (double i :Fe){
+                 std::cout << i << ' ';
+                }
+                std::cout <<'\n';
 		
 		std::cout << "\ntest assemblage global F :\n";
 		std::vector< double > F( mesh.nb_vertices(), 0);
 		local_to_global_matrix(mesh,
+		false,
 		4,
 		Fe,
 		F );
-		F.print();
+		std::cout << "\nVecteur température :\n";
+                for (double i :F){
+                 std::cout << i << ' ';
+                }
+                std::cout <<'\n';
 		return true;
         }
         
