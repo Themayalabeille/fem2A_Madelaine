@@ -186,23 +186,22 @@ namespace FEM2A {
 		mesh.load("data/square.mesh");
 		ElementMapping element(mesh, false, 4);
 		ShapeFunctions reference_functions = ShapeFunctions(2,1);
-		DenseMatrix Fe;
-		Ke.set_size(3,3);
-		assemble_elementary_matrix(
+		std::vector< double > Fe;
+		assemble_elementary_vector(
 		element,
 		reference_functions,
 		quadrature,
 		unit_fct,
-		Ke);
-		Ke.print();
+		Fe);
+		Fe.print();
 		
 		std::cout << "\ntest assemblage global F :\n";
-		SparseMatrix K = SparseMatrix( mesh.nb_vertices());
+		std::vector< double > F( mesh.nb_vertices(), 0);
 		local_to_global_matrix(mesh,
 		4,
-		Ke,
-		K );
-		K.print();
+		Fe,
+		F );
+		F.print();
 		return true;
         }
         
