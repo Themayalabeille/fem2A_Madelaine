@@ -175,7 +175,7 @@ namespace FEM2A {
                 std::cout << Fe[i] << std::endl;
                 }
 
-		assemble_elementary_neumann_vector(element, reference_functions, quadrature, unit_fct, Fe )
+		assemble_elementary_neumann_vector(element, reference_functions, quadrature, unit_fct, Fe );
 		std::cout << "Fe neuman" << std::endl;
 		for (int i = 0; i < Fe.size(); i++){
                 std::cout << Fe[i] << std::endl;
@@ -200,7 +200,7 @@ namespace FEM2A {
 		quadrature,
 		unit_fct,
 		Fe);
-		std::cout << "\nVecteur température :\n";
+		std::cout << "\nFe :\n";
                 for (double i :Fe){
                  std::cout << i << ' ';
                 }
@@ -208,7 +208,7 @@ namespace FEM2A {
 		
 		std::cout << "\ntest assemblage global F :\n";
 		std::vector< double > F( mesh.nb_vertices(), 0);
-		local_to_global_matrix(mesh,
+		local_to_global_vector(mesh,
 		false,
 		4,
 		Fe,
@@ -219,53 +219,12 @@ namespace FEM2A {
                 }
                 std::cout <<'\n';
 
-		assemble_elementary_neumann_vector(element, reference_functions, quadrature, unit_fct, Fe )
-		std::cout << "Fe neuman : " << std::endl;
+		assemble_elementary_neumann_vector(element, reference_functions, quadrature, unit_fct, Fe );
+		std::cout << "\nFe neuman : \n";
 		for (int i = 0; i < Fe.size(); i++){
-                std::cout << Fe[i] << std::endl;
+                 std::cout << Fe[i] << std::endl;
                 }
 		return true;
-        }
-        
-        bool test_dirichlet(){
-        	std::cout << "\ntest dirichlet :" << std::endl;
-        	Mesh mesh;
-                mesh.load("data/square.mesh");
-                std::vector< double > values;
-                for (int i = 0; i < mesh.nb_vertices(); i++){
-                 values.push_back(0);}
-                
-                Quadrature quadrature;
-		quadrature = quadrature.get_quadrature(2, false);
-		ElementMapping element(mesh, false, 4);
-		ShapeFunctions reference_functions = ShapeFunctions(2,1);
-		DenseMatrix Ke;
-		Ke.set_size(3,3);
-		assemble_elementary_matrix(
-		element,
-		reference_functions,
-		quadrature,
-		unit_fct,
-		Ke);
-                SparseMatrix K = SparseMatrix( mesh.nb_vertices());
-		local_to_global_matrix(mesh,
-		4,
-		Ke,
-		K );
-		std::vector< double > F( mesh.nb_vertices(), 0);
-		std::vector< bool > attribute_is_dirichlet;
-                for (int i = 0; i < mesh.nb_vertices(); i++){
-                 attribute_is_dirichlet.push_back(true);}
-                
-               
-        	apply_dirichlet_boundary_conditions(
-        	mesh,
-		attribute_is_dirichlet, /* size: nb of attributes */
-		values, /* size: nb of DOFs */
-		K,
-		F );
-        	
-        	return true;
         }
 
 

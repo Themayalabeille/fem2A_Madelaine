@@ -35,7 +35,6 @@ void run_tests()
     const bool t_elem_mapping = true;
     const bool t_shape_function = true;
     const bool t_assemble_Ke = true;
-    const bool t_dirichlet = true;
 
 
     if( t_opennl ) test_opennl();
@@ -48,7 +47,7 @@ void run_tests()
     if( t_shape_function ) Tests::test_shape_function();
     if( t_assemble_Ke ) Tests::test_assemble_Ke_K();
     if( t_assemble_Ke ) Tests::test_assemble_elementary_vector();
-    if( t_dirichlet ) Tests::test_dirichlet();
+
     
 }
 
@@ -57,15 +56,19 @@ void run_simu()
 
     const bool simu_pure_dirichlet = false;
     const bool simu_pure_dirichlet_source = true;
+    const bool simu_neumann = false;
 
     const bool verbose = flag_is_used( "-v", arguments )
         || flag_is_used( "--verbose", arguments );
 
     if( simu_pure_dirichlet ) {
-        Simu::pure_dirichlet_pb("data/square_fine.mesh", verbose);
+        Simu::pure_dirichlet_pb("data/square.mesh", verbose);
     }
     if( simu_pure_dirichlet_source ) {
-        Simu::pure_dirichlet_pb_source("data/square_fine.mesh", verbose);
+        Simu::pure_dirichlet_pb_source("data/square.mesh", verbose);
+    }
+    if( simu_neumann ) {
+        Simu::neumann_pb("data/square.mesh", verbose);
     }
 }
 
