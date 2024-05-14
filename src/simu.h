@@ -184,9 +184,25 @@ namespace FEM2A {
           values[i] = fct(mesh.get_vertex(i)); 
          }
                 
-         std::vector< bool > attribute_is_dirichlet(1,true);
+         mesh.set_attribute(right, 1, true);
+	 mesh.set_attribute(left, 2, true);
+	 mesh.set_attribute(top, 2, true);
+	 mesh.set_attribute(bottom, 2, true);
+
+         std::vector< bool > attribute_is_dirichlet (3, false); 
+         std::vector< bool > attribute_is_neumann (3, false);
+	 attribute_is_dirichlet[1] = true;
+         attribute_is_neumann[2] = true;
             
          apply_dirichlet_boundary_conditions(mesh, attribute_is_dirichlet, values, K, F);
+
+	 for (int edge = 0; edge < mesh.nb_edges(); edge++){ 
+          if (attribute_is_neumann[mesh.get_edge_attribute(edge)]){
+           ElementMapping elt_mapping_1D(mesh, true, edge);
+	   assemble_elementary_neumann_vector(elt_mapping_1D, shp_fcts_1D, quad_1D, neumann_square, Fe_1D);
+	   local_to_global_vector(mesh, true, edge, Fe_1D, F );
+          }
+         }
             
          std::vector<double> x(mesh.nb_vertices(), 0);
          bool converged = solve(K, F, x);
