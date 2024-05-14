@@ -23,25 +23,62 @@ namespace FEM2A {
             return 0.;
         }
 
+	\\condition de Dirichlet pour la première simulation
         double xy_fct( vertex v )
         {
             return v.x + v.y;
         }
-        
+
+        \\terme source pour le sinus_bump
         double sinus_bump( vertex v )
         {
             return 2*pow(M_PI,2)*sin(M_PI*v.x)*sin(M_PI*v.y);
         }
-        
+
         double sin_fct( vertex v )
         {
             return sin(M_PI*v.y);
         }
-        
+
+        \\solution analytique pour le sinus bump
         double sol_analytique( vertex v )
         {
             return sin(M_PI*v.x)*sin(M_PI*v.y);
         }
+
+        //Conditions de Neumann
+	double top (vertex v)
+	{
+	    if (v.y >= 0.999999999){return 1.;}
+	    else {return -1.;};
+	}
+	
+	double bottom (vertex v)
+	{
+	    if (v.y <= 0.000000001){return 1.;}
+	    else {return -1.;};
+	}
+	
+	double right (vertex v)
+	{
+	    if (std::abs(v.x - 1.) <= 0.000000001){return 1.;}
+	    else {return -1.;};
+	}
+	
+	double left (vertex v)
+	{
+	    if (std::abs(v.x) <= 0.000000001){return 1.;}
+	    else {return -1.;};
+	}
+	
+	//condition de Neumann pour la simulation carré
+	double neumann_square (vertex v)
+	{
+	    //condition sin sur le bord gauche
+	    if (left(v) <= 1.000000001 and left(v) >= 0.999999999){return sin(M_PI*v.y);} 
+	    //nul sur le bord droit
+	    else {return 0;}
+	}
 
         //#################################
         //  Simulations
