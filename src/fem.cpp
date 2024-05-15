@@ -267,18 +267,17 @@ DenseMatrix ElementMapping::jacobian_matrix( vertex x_r ) const
         const ShapeFunctions& reference_functions,
         const Quadrature& Ke_quad,
         double (*coefficient)(vertex),
-        DenseMatrix& Ke )
-    {
+        DenseMatrix& Ke ){
         for (int i = 0; i < Ke.height(); i++){
          for (int j = 0; j < Ke.width(); j++){
-		for (int q = 0; q < Ke_quad.nb_points(); q++){
-			vertex gauss_point = Ke_quad.point(q);
-			DenseMatrix jacobian = elt_mapping.jacobian_matrix(gauss_point);
-			vec2 gradi = jacobian.invert_2x2().transpose().mult_2x2_2(reference_functions.evaluate_grad(i, gauss_point));
-			vec2 gradj = jacobian.invert_2x2().transpose().mult_2x2_2(reference_functions.evaluate_grad(j, gauss_point));
-			double scal = dot(gradi,gradj);
-			Ke.add(i, j, Ke_quad.weight(q) * coefficient(elt_mapping.transform(gauss_point)) * scal * elt_mapping.jacobian(gauss_point));
-		}
+          for (int q = 0; q < Ke_quad.nb_points(); q++){
+	   vertex gauss_point = Ke_quad.point(q);
+	   DenseMatrix jacobian = elt_mapping.jacobian_matrix(gauss_point);
+	   vec2 gradi = jacobian.invert_2x2().transpose().mult_2x2_2(reference_functions.evaluate_grad(i, gauss_point));
+	   vec2 gradj = jacobian.invert_2x2().transpose().mult_2x2_2(reference_functions.evaluate_grad(j, gauss_point));
+	   double scal = dot(gradi,gradj);
+	   Ke.add(i, j, Ke_quad.weight(q) * coefficient(elt_mapping.transform(gauss_point)) * scal * elt_mapping.jacobian(gauss_point));
+	  }
          }
         }
     }
@@ -287,37 +286,30 @@ DenseMatrix ElementMapping::jacobian_matrix( vertex x_r ) const
         const Mesh& M,
         int t,
         const DenseMatrix& Ke,
-        SparseMatrix& K )
-    {    
+        SparseMatrix& K ){    
         for (int i = 0; i < Ke.height(); i++){
          for (int j = 0; j < Ke.width(); j++){
           K.add(M.get_triangle_vertex_index(t,i), M.get_triangle_vertex_index(t,j), Ke.get(i,j));
-        }
+         }
         }
     }
 
-	void assemble_elementary_vector(
+    void assemble_elementary_vector(
         const ElementMapping& elt_mapping,
         const ShapeFunctions& reference_functions,
         const Quadrature& quadrature,
         double (*source)(vertex),
-        std::vector< double >& Fe )
-    {      
-        int imax;
-        double shape_i;
-        
-        imax = reference_functions.nb_functions();
-        Fe.resize(imax);
-        
-        for (int i =0; i<imax; ++i)
-            {
-            Fe[i] =0;
-            for(int q = 0; q< quadrature.nb_points(); ++q)
-                {
-                shape_i = reference_functions.evaluate(i,quadrature.point(q));
-                Fe[i]+= quadrature.weight(q)*source(elt_mapping.transform(quadrature.point(q)))* shape_i * elt_mapping.jacobian(quadrature.point(q));
-                }
-            }
+        std::vector< double >& Fe ){      
+        double sum;
+
+        for (int i =0; i<Fe.size(); ++i){
+         sum = 0;
+         for(int q = 0; q< quadrature.nb_points(); ++q){
+          double shape_i = reference_functions.evaluate(i,quadrature.point(q));
+          sum+= quadrature.weight(q)*source(elt_mapping.transform(quadrature.point(q)))* shape_i * elt_mapping.jacobian(quadrature.point(q));
+         }
+         Fe[i] = sum;
+        }
     }
 
 
@@ -345,17 +337,16 @@ DenseMatrix ElementMapping::jacobian_matrix( vertex x_r ) const
         bool border,
         int i,
         std::vector< double >& Fe,
-        std::vector< double >& F )
-    {
+        std::vector< double >& F ){
         if (border) {
-        	for (int j = 0; j < Fe.size();j++){
-        	 F[M.get_edge_vertex_index(i, j)] += Fe[j];
-        	}
+         for (int j = 0; j < Fe.size();j++){
+          F[M.get_edge_vertex_index(i, j)] += Fe[j];
+         }
         }
         else {
-        	for (int j = 0; j < Fe.size();j++){
-        	 F[M.get_triangle_vertex_index(i, j)] += Fe[j];
-        	}
+         for (int j = 0; j < Fe.size();j++){
+          F[M.get_triangle_vertex_index(i, j)] += Fe[j];
+         }
         }
     }
 
@@ -369,20 +360,21 @@ DenseMatrix ElementMapping::jacobian_matrix( vertex x_r ) const
         int P = 10000;
         std::vector<bool> node_check;
         for (int i = 0; i < M.nb_vertices(); i++){
-                 node_check.push_back(false);}
+         node_check.push_back(false);}
+         
         for (int i = 0; i< M.nb_edges(); i++){
          if (attribute_is_dirichlet[M.get_edge_attribute(i)]){
            int j1 = M.get_edge_vertex_index(i,0);
            if (!node_check[j1]) {
-           K.add(j1, j1, P);
-           F[j1] += values[j1]*P;
-           node_check[j1] = true;
+            K.add(j1, j1, P);
+            F[j1] += values[j1]*P;
+            node_check[j1] = true;
            }
            int j2 = M.get_edge_vertex_index(i,1);
            if (!node_check[j2]) {
-           K.add(j2, j2, P);
-           F[j2] += values[j2]*P;
-           node_check[j2] = true;
+            K.add(j2, j2, P);
+            F[j2] += values[j2]*P;
+            node_check[j2] = true;
            }
           }
          }

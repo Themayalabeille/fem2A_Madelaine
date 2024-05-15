@@ -283,7 +283,7 @@ namespace FEM2A {
        	  local_to_global_matrix(mesh, i, Ke, K);
 		
 	  //F
-	  std::vector< double > Fe;
+	  std::vector< double > Fe(3,0.);
 	  assemble_elementary_vector(element, reference_functions, quadrature, source, Fe);     
        	  local_to_global_vector(mesh, false, i, Fe, F);
          }

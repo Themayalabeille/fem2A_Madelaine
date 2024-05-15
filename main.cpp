@@ -54,8 +54,10 @@ void run_tests()
 void run_simu()
 {
     //choose the quadrature degree
+    std::cout << "choose the quadrature degree (0, 2, 4, 6) : ";
     int quad_degree = 2;
-    
+    std::cin >> quad_degree;
+
     //choose the source function
     double (*source)(vertex) = FEM2A::Simu::sinus_bump;
     
@@ -66,8 +68,8 @@ void run_simu()
     }
     
     const bool simu_pure_dirichlet = false;
-    const bool simu_pure_dirichlet_source = false;
-    const bool simu_neumann = true;
+    const bool simu_pure_dirichlet_source = true;
+    const bool simu_neumann = false;
     const bool simu_mug = false;
 
     const bool verbose = flag_is_used( "-v", arguments )
