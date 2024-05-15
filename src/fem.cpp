@@ -327,7 +327,7 @@ DenseMatrix ElementMapping::jacobian_matrix( vertex x_r ) const
         const ShapeFunctions& reference_functions_1D,
         const Quadrature& quadrature_1D,
         double (*neumann)(vertex),
-        std::vector< double >& Fe )ringlab {
+        std::vector< double >& Fe ){
         double sum;
         for (int i = 0; i < reference_functions_1D.nb_functions(); i++) {
          sum = 0;

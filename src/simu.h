@@ -23,13 +23,13 @@ namespace FEM2A {
             return 0.;
         }
 
-	\\condition de Dirichlet pour la première simulation
+	//condition de Dirichlet pour la première simulation
         double xy_fct( vertex v )
         {
             return v.x + v.y;
         }
 
-        \\terme source pour le sinus_bump
+        //terme source pour le sinus_bump
         double sinus_bump( vertex v )
         {
             return 2*pow(M_PI,2)*sin(M_PI*v.x)*sin(M_PI*v.y);
@@ -40,7 +40,7 @@ namespace FEM2A {
             return sin(M_PI*v.y);
         }
 
-        \\solution analytique pour le sinus bump
+        //solution analytique pour le sinus bump
         double sol_analytique( vertex v )
         {
             return sin(M_PI*v.x)*sin(M_PI*v.y);
@@ -74,9 +74,9 @@ namespace FEM2A {
 	//condition de Neumann pour la simulation carré
 	double neumann_square (vertex v)
 	{
-	    //condition sin sur le bord gauche
-	    if (left(v) <= 1.000000001 and left(v) >= 0.999999999){return sin(M_PI*v.y);} 
-	    //nul sur le bord droit
+	    if (left(v) <= 1.000000001 and left(v) >= 0.999999999){
+	     return sin(M_PI*v.y);
+	    } 
 	    else {return 0;}
 	}
 
@@ -86,9 +86,9 @@ namespace FEM2A {
 
 	// Simu 1 --------------------------------------------------------------------------------------------------
 
-        void pure_dirichlet_pb( const std::string& mesh_filename, bool verbose ){
+        void pure_dirichlet_pb( const std::string& mesh_filename, bool verbose, int quad_degree){
          std::cout << "Solving a pure Dirichlet problem" << std::endl;
-         int quadrature_degree = 2;
+         int quadrature_degree = quad_degree;
          if ( verbose ) {
           std::cout << " quadrature degree" << quadrature_degree << "\n";
           std::cout << " condition de dirichlet sur tous les bords de valeur u = x+y sans source" << "\n";
@@ -138,9 +138,10 @@ namespace FEM2A {
 
         // Simu 2 --------------------------------------------------------------------------------------------------
 
-        void neumann_pb( const std::string& mesh_filename, bool verbose ){
+        void neumann( const std::string& mesh_filename, bool verbose, int quad_degree){
          std::cout << "Solving a neumann and dirichlet problem" << std::endl;
-         int quadrature_degree = 2;
+         //choose the quadrature degree
+         int quadrature_degree = quad_degree;
 	 //choose the source function (sinus_bump or unit_fct)
          auto source = unit_fct;
          auto fct = zero_fct;
@@ -150,38 +151,42 @@ namespace FEM2A {
           std::cout << "maillage : " << mesh_filename << "\n";
           std::cout << "terme source : " << source << "\n";  
          }
+         std::cout << "11111111111111111111111111111111111111111111111";
          Mesh mesh;
          mesh.load(mesh_filename);
-            
+         std::cout << "222222222222222222222222222222222222222222222222222222222222222222";
          mesh.set_attribute(unit_fct, 0, true);
-            
-         Quadrature quadrature;
-	 quadrature = quadrature.get_quadrature(quadrature_degree, false);
+         std::cout << "33333333333333333333333333333333333333333333333333333333333333333333";
+         Quadrature quadrature_triangle;
+	 quadrature_triangle = quadrature_triangle.get_quadrature(quadrature_degree, false);
+	 Quadrature quadrature_ligne;
+	 quadrature_ligne = quadrature_ligne.get_quadrature(quadrature_degree, true);
 	    
-	 ShapeFunctions reference_functions = ShapeFunctions(2,1);
+	 ShapeFunctions reference_functions_triangle = ShapeFunctions(2,1);
+	 ShapeFunctions reference_functions_ligne = ShapeFunctions(1,1);
 	    
 	 SparseMatrix K( mesh.nb_vertices() );
 	    
 	 std::vector< double > F(mesh.nb_vertices() , 0);
   
 	 for (int i = 0; i < mesh.nb_triangles(); i++){
-	  ElementMapping element(mesh, false, i);
+	  ElementMapping element_triangle (mesh, false, i);
 	      
           //K
 	  DenseMatrix Ke;
           Ke.set_size(3,3);
-	  assemble_elementary_matrix(element, reference_functions, quadrature, unit_fct, Ke);     
+	  assemble_elementary_matrix(element_triangle, reference_functions_triangle, quadrature_triangle, unit_fct, Ke);     
        	  local_to_global_matrix(mesh, i, Ke, K );
 		
 	   //F
 	   std::vector< double > Fe;
-	   assemble_elementary_vector(element, reference_functions, quadrature, source, Fe);     
+	   assemble_elementary_vector(element_triangle, reference_functions_triangle, quadrature_triangle, source, Fe);     
        	   local_to_global_vector(mesh, true, i, Fe, F);
           }
             
          std::vector< double > values(mesh.nb_vertices());
          for (int i =0 ; i < mesh.nb_vertices(); i++){
-          values[i] = fct(mesh.get_vertex(i)); 
+          values[i] = fct(mesh.get_vertex(i));
          }
                 
          mesh.set_attribute(right, 1, true);
@@ -193,14 +198,16 @@ namespace FEM2A {
          std::vector< bool > attribute_is_neumann (3, false);
 	 attribute_is_dirichlet[1] = true;
          attribute_is_neumann[2] = true;
-            
+         
          apply_dirichlet_boundary_conditions(mesh, attribute_is_dirichlet, values, K, F);
-
+         
+         std::vector< double > Fe2;
+         
 	 for (int edge = 0; edge < mesh.nb_edges(); edge++){ 
           if (attribute_is_neumann[mesh.get_edge_attribute(edge)]){
-           ElementMapping elt_mapping_1D(mesh, true, edge);
-	   assemble_elementary_neumann_vector(elt_mapping_1D, shp_fcts_1D, quad_1D, neumann_square, Fe_1D);
-	   local_to_global_vector(mesh, true, edge, Fe_1D, F );
+           ElementMapping element_ligne (mesh, true, edge);
+	   assemble_elementary_neumann_vector(element_ligne, reference_functions_ligne, quadrature_ligne, neumann_square, Fe2);
+	   local_to_global_vector(mesh, true, edge, Fe2, F);
           }
          }
             
@@ -217,11 +224,11 @@ namespace FEM2A {
         }
 
         // Simu 3 --------------------------------------------------------------------------------------------------
-        void pure_dirichlet_pb_source( const std::string& mesh_filename, bool verbose ){
+        void pure_dirichlet_pb_source( const std::string& mesh_filename, bool verbose, int quad_degree, double (*source_fct)(vertex)){
          std::cout << "Solving a pure Dirichlet problem" << std::endl;
-         int quadrature_degree = 0;
+         int quadrature_degree = quad_degree;
 	 //choose the source function (sinus_bump or unit_fct)
-         auto source = unit_fct;
+         auto source = source_fct;
          auto fct = zero_fct;
          if ( verbose ) {
           std::cout << "quadrature degree : " << quadrature_degree << "\n";
@@ -290,5 +297,20 @@ namespace FEM2A {
          //choose the name of the solution mesh saved
          save_solution(x, "square.bb");
         }
+        
+         // Simu 4 --------------------------------------------------------------------------------------------------
+        void mug( const std::string& mesh_filename, bool verbose, int quad_degree){
+         std::cout << "Solving a pure Dirichlet problem" << std::endl;
+         int quadrature_degree = quad_degree;
+	 //choose the source function (sinus_bump or unit_fct)
+         auto source = zero_fct;
+         auto fct = zero_fct;
+         if ( verbose ) {
+          std::cout << "quadrature degree : " << quadrature_degree << "\n";
+          std::cout << "condition de dirichlet sur tous les bords de valeur u = " << "zero_fct" << " avec source unitaire" << "\n";
+          std::cout << "maillage : " << mesh_filename << "\n";
+          std::cout << "terme source : " << source << "\n"; 
+         }
+         }
    }
 }

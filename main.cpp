@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <set>
 
 #include "src/fem.h"
 #include "src/mesh.h"
@@ -53,22 +54,37 @@ void run_tests()
 
 void run_simu()
 {
-
+    //choose the quadrature degree
+    int quad_degree = 2;
+    
+    //choose the source function
+    double (*source)(vertex) = FEM2A::Simu::sinus_bump;
+    
+    //test de la validité du choix de quadrature
+    std::set<int> mySet {0, 2, 4, 6};
+    if(mySet.find(quad_degree) == mySet.end()){
+     std::cout << "!!!!!!!!!!!!!!!!     La valeur de quadrature choisie n'est pas valide ahhhhhh\n";
+    }
+    
     const bool simu_pure_dirichlet = false;
-    const bool simu_pure_dirichlet_source = true;
-    const bool simu_neumann = false;
+    const bool simu_pure_dirichlet_source = false;
+    const bool simu_neumann = true;
+    const bool simu_mug = false;
 
     const bool verbose = flag_is_used( "-v", arguments )
         || flag_is_used( "--verbose", arguments );
 
     if( simu_pure_dirichlet ) {
-        Simu::pure_dirichlet_pb("data/square.mesh", verbose);
+        Simu::pure_dirichlet_pb("data/square.mesh", verbose, quad_degree);
     }
     if( simu_pure_dirichlet_source ) {
-        Simu::pure_dirichlet_pb_source("data/square.mesh", verbose);
+        Simu::pure_dirichlet_pb_source("data/square.mesh", verbose, quad_degree, source);
     }
     if( simu_neumann ) {
-        Simu::neumann_pb("data/square.mesh", verbose);
+        Simu::neumann("data/square.mesh", verbose, quad_degree);
+    }
+    if( simu_mug ) {
+        Simu::mug("data/mug_0_5.mesh", verbose, quad_degree);
     }
 }
 
