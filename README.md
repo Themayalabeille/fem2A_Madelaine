@@ -22,7 +22,7 @@ Générateurs de maillages triangulaires : [Gmsh](http://gmsh.info/),[Triangle](
 
 # Eléments d'utilisation du code
 
-#### Test
+#### Tests
 
 Les tests executés par le programme peuvent être choisi dans la fonction run_tests dans le fichier main.cpp. Les tests true sont executés et les test false ne le sont pas.
 

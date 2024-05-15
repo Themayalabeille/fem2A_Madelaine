@@ -74,10 +74,36 @@ namespace FEM2A {
 	//condition de Neumann pour la simulation carré
 	double neumann_square (vertex v)
 	{
-	    if (left(v) <= 1.000000001 and left(v) >= 0.999999999){
+	    if (left(v) ==1){
 	     return sin(M_PI*v.y);
 	    } 
 	    else {return 0;}
+	}
+	
+	//conditions de Neumann et Dirichlet pour le mug
+	double liquid (vertex v)
+	{
+	    if (((v.x == 1) && (v.y >= 1) && (v.y <= 10)) ||
+		((v.x == 20) && (v.y >= 1) && (v.y <= 10)) ||
+		((v.y == 1) && (v.x >= 1) && (v.x <= 20)))
+		{return 1.;}
+	    else {return -1.;}
+		
+	}
+	
+	double air (vertex v) //Region a lair libre
+	{
+	    if (((v.x == 1) && (v.y >= 1) && (v.y <= 10)) ||
+		 ((v.x == 20) && (v.y >= 1) && (v.y <= 10)) ||
+		 ((v.y == 1) && (v.x >= 1) && (v.x <= 20)))
+            {return -1.;}
+	    else {return 1.;}
+		
+	}
+	
+	double neumann_flux (vertex v)
+	{
+		return -0.1;
 	}
 
         //#################################
@@ -151,12 +177,10 @@ namespace FEM2A {
           std::cout << "maillage : " << mesh_filename << "\n";
           std::cout << "terme source : " << source << "\n";  
          }
-         std::cout << "11111111111111111111111111111111111111111111111";
+         
          Mesh mesh;
          mesh.load(mesh_filename);
-         std::cout << "222222222222222222222222222222222222222222222222222222222222222222";
-         mesh.set_attribute(unit_fct, 0, true);
-         std::cout << "33333333333333333333333333333333333333333333333333333333333333333333";
+         
          Quadrature quadrature_triangle;
 	 quadrature_triangle = quadrature_triangle.get_quadrature(quadrature_degree, false);
 	 Quadrature quadrature_ligne;
@@ -165,7 +189,7 @@ namespace FEM2A {
 	 ShapeFunctions reference_functions_triangle = ShapeFunctions(2,1);
 	 ShapeFunctions reference_functions_ligne = ShapeFunctions(1,1);
 	    
-	 SparseMatrix K( mesh.nb_vertices() );
+	 SparseMatrix K (mesh.nb_vertices());
 	    
 	 std::vector< double > F(mesh.nb_vertices() , 0);
   
@@ -179,9 +203,9 @@ namespace FEM2A {
        	  local_to_global_matrix(mesh, i, Ke, K );
 		
 	   //F
-	   std::vector< double > Fe;
-	   assemble_elementary_vector(element_triangle, reference_functions_triangle, quadrature_triangle, source, Fe);     
-       	   local_to_global_vector(mesh, true, i, Fe, F);
+	   std::vector< double > Fe(3,0.);
+	   assemble_elementary_vector(element_triangle, reference_functions_triangle, quadrature_triangle, source, Fe);
+       	   local_to_global_vector(mesh, false, i, Fe, F);
           }
             
          std::vector< double > values(mesh.nb_vertices());
@@ -201,10 +225,9 @@ namespace FEM2A {
          
          apply_dirichlet_boundary_conditions(mesh, attribute_is_dirichlet, values, K, F);
          
-         std::vector< double > Fe2;
-         
 	 for (int edge = 0; edge < mesh.nb_edges(); edge++){ 
           if (attribute_is_neumann[mesh.get_edge_attribute(edge)]){
+           std::vector< double > Fe2(2,0.);
            ElementMapping element_ligne (mesh, true, edge);
 	   assemble_elementary_neumann_vector(element_ligne, reference_functions_ligne, quadrature_ligne, neumann_square, Fe2);
 	   local_to_global_vector(mesh, true, edge, Fe2, F);
@@ -220,7 +243,7 @@ namespace FEM2A {
          }
          std::cout <<'\n';
          //choose the name of the solution mesh saved
-         save_solution(x, "square.bb");
+         save_solution(x, "square_fine.bb");
         }
 
         // Simu 3 --------------------------------------------------------------------------------------------------
@@ -246,7 +269,7 @@ namespace FEM2A {
 	    
 	 ShapeFunctions reference_functions = ShapeFunctions(2,1);
 	    
-	 SparseMatrix K( mesh.nb_vertices() );
+	 SparseMatrix K (mesh.nb_vertices());
 	    
 	 std::vector< double > F(mesh.nb_vertices() , 0);
 	    
@@ -293,7 +316,7 @@ namespace FEM2A {
          for (double i :p){
           std::cout << i << ' ';
          }
-         std::cout <<'\n';
+         std::cout << "end\n";
          //choose the name of the solution mesh saved
          save_solution(x, "square.bb");
         }
@@ -304,13 +327,75 @@ namespace FEM2A {
          int quadrature_degree = quad_degree;
 	 //choose the source function (sinus_bump or unit_fct)
          auto source = zero_fct;
-         auto fct = zero_fct;
+         auto fct = unit_fct;
          if ( verbose ) {
           std::cout << "quadrature degree : " << quadrature_degree << "\n";
           std::cout << "condition de dirichlet sur tous les bords de valeur u = " << "zero_fct" << " avec source unitaire" << "\n";
           std::cout << "maillage : " << mesh_filename << "\n";
           std::cout << "terme source : " << source << "\n"; 
          }
+         Mesh mesh;
+         mesh.load(mesh_filename);
+         
+         Quadrature quadrature_triangle;
+	 quadrature_triangle = quadrature_triangle.get_quadrature(quadrature_degree, false);
+	 Quadrature quadrature_ligne;
+	 quadrature_ligne = quadrature_ligne.get_quadrature(quadrature_degree, true);
+	    
+	 ShapeFunctions reference_functions_triangle = ShapeFunctions(2,1);
+	 ShapeFunctions reference_functions_ligne = ShapeFunctions(1,1);
+	    
+	 SparseMatrix K (mesh.nb_vertices());
+	    
+	 std::vector< double > F(mesh.nb_vertices() , 0);
+  
+	 for (int i = 0; i < mesh.nb_triangles(); i++){
+	  ElementMapping element_triangle (mesh, false, i);
+	      
+          //K
+	  DenseMatrix Ke;
+          Ke.set_size(3,3);
+	  assemble_elementary_matrix(element_triangle, reference_functions_triangle, quadrature_triangle, unit_fct, Ke);     
+       	  local_to_global_matrix(mesh, i, Ke, K );
+		
+	   //F
+
+          }
+            
+         std::vector< double > values(mesh.nb_vertices());
+         for (int i =0 ; i < mesh.nb_vertices(); i++){
+          values[i] = fct(mesh.get_vertex(i)) * 100;
          }
+                
+         mesh.set_attribute(liquid, 1, true);
+	 mesh.set_attribute(air, 2, true);
+
+         std::vector< bool > attribute_is_dirichlet (3, false); 
+         std::vector< bool > attribute_is_neumann (3, false);
+	 attribute_is_dirichlet[1] = true;
+         attribute_is_neumann[2] = true;
+         
+         apply_dirichlet_boundary_conditions(mesh, attribute_is_dirichlet, values, K, F);
+         
+	 for (int edge = 0; edge < mesh.nb_edges(); edge++){ 
+          if (attribute_is_neumann[mesh.get_edge_attribute(edge)]){
+           std::vector< double > Fe2(2,0.);
+           ElementMapping element_ligne (mesh, true, edge);
+	   assemble_elementary_neumann_vector(element_ligne, reference_functions_ligne, quadrature_ligne, neumann_flux, Fe2);
+	   local_to_global_vector(mesh, true, edge, Fe2, F);
+          }
+         }
+            
+         std::vector<double> x(mesh.nb_vertices(), 0);
+         bool converged = solve(K, F, x);
+         if (!converged) {std::cout << "\nAh! le système linéaire n'a pas convergé!!!!!!!!!!!!!!!!!!!\n";}
+         std::cout << "\nVecteur température :\n";
+         for (double i :x){
+          std::cout << i << ' ';
+         }
+         std::cout <<'\n';
+         //choose the name of the solution mesh saved
+         save_solution(x, "mug_1.bb");
+       }
    }
 }

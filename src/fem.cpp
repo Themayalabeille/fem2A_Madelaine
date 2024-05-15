@@ -306,7 +306,6 @@ DenseMatrix ElementMapping::jacobian_matrix( vertex x_r ) const
         int imax;
         double shape_i;
         
-        
         imax = reference_functions.nb_functions();
         Fe.resize(imax);
         
@@ -329,7 +328,7 @@ DenseMatrix ElementMapping::jacobian_matrix( vertex x_r ) const
         double (*neumann)(vertex),
         std::vector< double >& Fe ){
         double sum;
-        for (int i = 0; i < reference_functions_1D.nb_functions(); i++) {
+        for (int i = 0; i < Fe.size(); i++) {
          sum = 0;
          for (int q = 0; q < quadrature_1D.nb_points(); q++) {
           vertex val = quadrature_1D.point(q);
@@ -337,7 +336,7 @@ DenseMatrix ElementMapping::jacobian_matrix( vertex x_r ) const
           //affichage du test conditions de neumann
           //std::cout << "i : " << i << " , q : " << q << " calcul : " << sum << "\n";
          }        	
-         Fe.push_back(sum);
+         Fe[i] = sum;
     	}
     }
 

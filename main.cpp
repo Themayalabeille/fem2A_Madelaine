@@ -49,7 +49,6 @@ void run_tests()
     if( t_assemble_Ke ) Tests::test_assemble_Ke_K();
     if( t_assemble_Ke ) Tests::test_assemble_elementary_vector();
 
-    
 }
 
 void run_simu()
@@ -81,10 +80,10 @@ void run_simu()
         Simu::pure_dirichlet_pb_source("data/square.mesh", verbose, quad_degree, source);
     }
     if( simu_neumann ) {
-        Simu::neumann("data/square.mesh", verbose, quad_degree);
+        Simu::neumann("data/square_fine.mesh", verbose, quad_degree);
     }
     if( simu_mug ) {
-        Simu::mug("data/mug_0_5.mesh", verbose, quad_degree);
+        Simu::mug("data/mug_1.mesh", verbose, quad_degree);
     }
 }
 
