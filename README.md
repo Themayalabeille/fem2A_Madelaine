@@ -34,9 +34,8 @@ Les tests executés par le programme peuvent être choisi dans la fonction run_t
 
 #### Simulations
 
-La simulation à executer est selectionnable dans la fonction run_simus du fichier main.cpp. La grille sur laquelle est executé la simulation en changeant le fichier .mesh dans run_simus ainsi que le degré de quadrature choisi et le terme source pour la simulation avec condition de Dirichlet pur.
-Le nom du fichier solution sauvegardé peut être changé dans la fonction de la simulation choisi dans le fichier simu.h et choisir l'option de calcul de l'erreur avec la solution analytique pour le sinus_bump.
-
+La simulation à executer est selectionnable dans la fonction run_simus du fichier main.cpp. Dans le fichier main.cpp, dans la fonction run_simus, est selectionnable la grille sur laquelle est executé la simulation en changeant le fichier .mesh ainsi que le degré de quadrature et le terme source pour la simulation avec condition de Dirichlet pur. Par défault, le degré de quadrature est demandé en console lors de l'execution d'une simulation.
+Le nom du fichier solution sauvegardé peut être changé dans la fonction correspondant à la simulation choisi (dans le fichier simu.h) De même, il est possible de choisir l'option de calcul de l'erreur avec la solution analytique pour le sinus_bump.
 
 - ***simu_pure_dirichlet*** : Simulation du problème de Dirichlet pur
 - ***simu_pure_dirichlet_source*** : Simulation du problème de Dirichlet avec un terme source unitaire ou de type sinus_bump
